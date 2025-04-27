@@ -1,24 +1,25 @@
 #!/bin/bash
-echo "Advanced npm registry debugging..."
+echo "Advanced npm registry debugging and fixing..."
+
+# Set registry to npmjs.org
+npm config set registry https://registry.npmjs.org/ --global
+npm config set registry https://registry.npmjs.org/ --location=project
 
 # Create comprehensive .npmrc
 cat > ./.npmrc << EOL
 registry=https://registry.npmjs.org/
 @*:registry=https://registry.npmjs.org/
 //registry.npmjs.org/:always-auth=false
-# Force all requests to use the main registry
-strict-ssl=false
 EOL
 
-# Debug package-lock.json for registry references
-echo "Checking for JFrog references in package-lock.json..."
-if [ -f package-lock.json ]; then
-  grep -i "jfrog" package-lock.json || echo "No direct JFrog references found in package-lock"
-fi
+# The critical fix: regenerate package-lock.json with the new registry
+echo "Regenerating package-lock.json with public registry URLs..."
+rm -f package-lock.json
+npm install --package-lock-only
 
-# Try using npm with verbose logging
-echo "Will attempt npm install with verbose logging"
+# Debug - print current config
+echo "Current npm registry:"
+npm config get registry
 
-# Continue with npm ci but add --verbose flag
-# This will give more details about where npm is trying to fetch packages from
-npm config set registry https://registry.npmjs.org/ --global
+# Now we can run the regular install
+echo "Now running regular npm ci..."
