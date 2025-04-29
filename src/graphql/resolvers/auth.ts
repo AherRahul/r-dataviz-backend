@@ -61,4 +61,5 @@ export const AuthResolver = {
 
       return result;
     }
+  }
 };
