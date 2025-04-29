@@ -22,7 +22,6 @@ export interface IActiveProject {
 export interface IAuth {
   email: string;
   password: string;
-  activeProject?: any | null; // <- ✅ Make it optional or nullable
 }
 
 export interface AppContext {

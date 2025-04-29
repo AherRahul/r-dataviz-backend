@@ -1,5 +1,5 @@
-import { envConfig } from "../config/env.config";
-import { TokenPayload } from "../interfaces/auth.interface";
+import { envConfig } from "@/config/env.config";
+import { TokenPayload } from "@/interfaces/auth.interface";
 import { sign, verify } from "jsonwebtoken";
 import { Request } from 'express';
 import { GraphQLError } from "graphql";
@@ -13,14 +13,14 @@ export const verifyToken = (token: string, secret: string): TokenPayload => {
 }
 
 export const authenticateGraphQLRoute = (req: Request): void => {
-  if (!req.session?.userId) {
+  if (!req.session?.access) {
     throw new GraphQLError('Please login again.');
   }
 
-  // Set the current user from session details
-  req.currentUser = {
-    userId: req.session.userId,
-    email: req.session.email,
-    activeProject: req.session.activeProject || null,
-  };
-};
+  try {
+    const payload: TokenPayload = verifyToken(req.session?.access, envConfig.JWT_ACCESS_SECRET);
+    req.currentUser = payload;
+  } catch (error: any) {
+    throw new GraphQLError(error?.message);
+  }
+}

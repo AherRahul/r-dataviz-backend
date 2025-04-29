@@ -2,12 +2,12 @@ import { AppDataSource } from "@/database/config";
 import { User } from "@/entities/user.entity";
 import { AppContext, IActiveProject, IAuth, IDataSource, TokenPayload } from "@/interfaces/auth.interface";
 import { ValidationService } from "./ValidationService";
-import { hashPassword, verifyPassword } from "../../utils/utils";
-import { generateAccessToken } from "../../utils/token-util";
+import { hashPassword, verifyPassword } from "@/utils/utils";
+import { generateAccessToken } from "@/utils/token-util";
 import { GraphQLError } from "graphql";
 import { IAuthPayload, IDataSourceProjectID } from "@/interfaces/datasource.interface";
 import { DatasourceService } from "../DatasourceService";
-import { getPostgreSQLCollections } from "../PGConnection";
+import { getPostgreSQLCollections } from "@/services/PGConnection";
 
 export class AuthService {
   static async register(input: IAuth, context: AppContext): Promise<IAuthPayload> {
@@ -38,8 +38,7 @@ export class AuthService {
       collections: [],
       user: {
         id: user.id,
-        email: user.email,
-        activeProject: null // or an actual value
+        email: user.email
       }
     }
   }
@@ -71,7 +70,6 @@ export class AuthService {
         projectId: result[0].projectId,
         type: result[0].type
       }
-
       if (activeProject.type === 'postgresql') {
         collections = await getPostgreSQLCollections(result[0].projectId);
       }
@@ -80,7 +78,7 @@ export class AuthService {
     const payload: TokenPayload = {
       userId: user.id,
       email: user.email,
-      activeProject: {} as IActiveProject
+      activeProject
     };
     const accessToken: string = generateAccessToken(payload);
     req.session = {
@@ -92,8 +90,7 @@ export class AuthService {
       collections,
       user: {
         id: user.id,
-        email: user.email,
-        activeProject: null // or an actual value
+        email: user.email
       }
     }
   }

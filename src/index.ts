@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import http from 'http';
+
 import express, { json, urlencoded, Request, Response } from 'express';
 import cookieSession from 'cookie-session';
 import cors from 'cors';
@@ -14,7 +15,7 @@ import { ApolloServer, BaseContext } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
-import { expressMiddleware, ExpressContextFunctionArgument } from '@apollo/server/express4';
+import { ExpressContextFunctionArgument, expressMiddleware } from '@apollo/server/express4';
 import { AppContext } from './interfaces/auth.interface';
 
 async function bootstrap() {
@@ -32,46 +33,40 @@ async function bootstrap() {
       return {
         message: error.message,
         code: error.extensions?.code || 'INTERNAL_SERVER_ERROR'
-      };
+      }
     },
     introspection: envConfig.NODE_ENV === 'development',
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
-      envConfig.NODE_ENV === 'development'
-        ? ApolloServerPluginLandingPageLocalDefault({
-            embed: true,
-            includeCookies: true
-          })
-        : ApolloServerPluginLandingPageDisabled()
+      envConfig.NODE_ENV === 'development' ? ApolloServerPluginLandingPageLocalDefault({
+        embed: true,
+        includeCookies: true
+      }) : ApolloServerPluginLandingPageDisabled()
     ]
   });
 
   await server.start();
 
-  app.set('trust proxy', 1); // Needed for secure cookies behind a proxy
-
-  // Session config
+  app.set('trust proxy', 1);
   app.use(
     cookieSession({
       name: 'session',
       keys: [envConfig.SECRET_KEY_ONE, envConfig.SECRET_KEY_TWO],
-      maxAge: 24 * 7 * 3600000, // 7 days
-      secure: true, // Always true in production
-      sameSite: 'none', // Required for cross-site cookies
-      httpOnly: true
+      maxAge: 24 * 7 * 3600000,
+      secure: envConfig.NODE_ENV !== 'development',
+      ...(envConfig.NODE_ENV !== 'development' && {
+        sameSite: 'none'
+      }),
+      httpOnly: envConfig.NODE_ENV !== 'development'
     })
   );
-
-  // CORS config
   const corsOptions = {
     origin: [envConfig.REACT_URL, envConfig.ANGULAR_URL],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   };
   app.use(cors(corsOptions));
-  app.options('*', cors(corsOptions)); // Handle preflight requests
 
-  // GraphQL endpoint
   app.use(
     '/graphql',
     cors(corsOptions),
@@ -91,15 +86,14 @@ async function bootstrap() {
   try {
     httpServer.listen(envConfig.PORT, () => {
       console.log(`Server running on port ${envConfig.PORT}`);
-    });
+    })
   } catch (error) {
-    console.error('Error starting server:', error);
+    console.log('Error starting server');
   }
 }
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log('PostgreSQL database connected successfully.');
-    bootstrap().catch(console.error);
-  })
-  .catch((error) => console.error('Error connecting to PostgreSQL.', error));
+AppDataSource.initialize().then(() => {
+  console.log('PostgreSQL database connected successfully.');
+  bootstrap().catch(console.error);
+}).catch((error) => console.log('Error connecting to PostgreSQL.', error));
+
