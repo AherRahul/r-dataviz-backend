@@ -38,7 +38,8 @@ export class AuthService {
       collections: [],
       user: {
         id: user.id,
-        email: user.email
+        email: user.email,
+        activeProject: null // or an actual value
       }
     }
   }
@@ -91,7 +92,8 @@ export class AuthService {
       collections,
       user: {
         id: user.id,
-        email: user.email
+        email: user.email,
+        activeProject: null // or an actual value
       }
     }
   }
