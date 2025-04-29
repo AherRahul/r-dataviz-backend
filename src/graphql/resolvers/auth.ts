@@ -9,9 +9,18 @@ export const AuthResolver = {
   Query: {
     async checkCurrentUser(_: undefined, __: undefined, contextValue: AppContext) {
       const { req } = contextValue;
+
+      console.log(req);
+
       authenticateGraphQLRoute(req);
+
+      console.log(authenticateGraphQLRoute(req));
+
       let collections: string[] = [];
       const result: IDataSource[] = await DatasourceService.getDataSources(`${req.currentUser?.userId}`);
+
+      console.log(result);
+
       if (result.length > 0) {
         const activeProject = req.currentUser?.activeProject ? req.currentUser?.activeProject : result[0];
         if (activeProject.type === 'postgresql') {
@@ -35,13 +44,15 @@ export const AuthResolver = {
       const { req } = contextValue;
       const user: IAuth = { email: args.email, password: args.password };
 
+      // Call your auth service for login, which should return user data
       const result: IAuthPayload = await AuthService.login(user, contextValue);
 
+      // If login is successful, save user info in session
       if (result && result.user?.id) {
         req.session = {
           userId: result.user.id,
           email: result.user.email,
-          activeProject: result.user.activeProject || null
+          activeProject: result.user.activeProject || null,
         };
         console.log('✅ Session set:', req.session);
       } else {
@@ -50,5 +61,4 @@ export const AuthResolver = {
 
       return result;
     }
-  }
 };

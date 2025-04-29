@@ -13,14 +13,14 @@ export const verifyToken = (token: string, secret: string): TokenPayload => {
 }
 
 export const authenticateGraphQLRoute = (req: Request): void => {
-  if (!req.session?.access) {
+  if (!req.session?.userId) {
     throw new GraphQLError('Please login again.');
   }
 
-  try {
-    const payload: TokenPayload = verifyToken(req.session?.access, envConfig.JWT_ACCESS_SECRET);
-    req.currentUser = payload;
-  } catch (error: any) {
-    throw new GraphQLError(error?.message);
-  }
-}
+  // Set the current user from session details
+  req.currentUser = {
+    userId: req.session.userId,
+    email: req.session.email,
+    activeProject: req.session.activeProject || null,
+  };
+};
