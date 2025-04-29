@@ -56,6 +56,7 @@ export interface IAuthPayload {
   collections: string[];
   projectIds: IDataSource[];
   user: {
+    activeProject: null;
     id: string;
     email: string;
   };

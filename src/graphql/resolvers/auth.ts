@@ -31,20 +31,24 @@ export const AuthResolver = {
 
   },
   Mutation: {
-    async loginUser(_: undefined, args: { email: string, password: string }, contextValue: AppContext) {
+    async loginUser(_: undefined, args: { email: string; password: string }, contextValue: AppContext) {
+      const { req } = contextValue;
       const user: IAuth = { email: args.email, password: args.password };
+
       const result: IAuthPayload = await AuthService.login(user, contextValue);
+
+      if (result && result.user?.id) {
+        req.session = {
+          userId: result.user.id,
+          email: result.user.email,
+          activeProject: result.user.activeProject || null
+        };
+        console.log('✅ Session set:', req.session);
+      } else {
+        console.warn('⚠️ Login failed, session not set');
+      }
+
       return result;
-    },
-    async registerUser(_: undefined, args: {user: IAuth}, contextValue: AppContext) {
-      const result: IAuthPayload = await AuthService.register(args.user, contextValue);
-      return result;
-    },
-    async logout(_: undefined, __: undefined, contextValue: AppContext) {
-      const result: string = AuthService.logout(contextValue);
-      return {
-        message: result
-      };
     }
   }
 };
