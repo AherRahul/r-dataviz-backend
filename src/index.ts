@@ -50,15 +50,6 @@ async function bootstrap() {
 
   app.set('trust proxy', 1); // Needed for secure cookies behind a proxy
 
-  // CORS config
-  const corsOptions = {
-    origin: [envConfig.REACT_URL, envConfig.ANGULAR_URL],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-  };
-  app.use(cors(corsOptions));
-  app.options('*', cors(corsOptions)); // Handle preflight requests
-
   // Session config
   app.use(
     cookieSession({
@@ -70,6 +61,15 @@ async function bootstrap() {
       httpOnly: true
     })
   );
+
+  // CORS config
+  const corsOptions = {
+    origin: [envConfig.REACT_URL, envConfig.ANGULAR_URL],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  };
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions)); // Handle preflight requests
 
   // GraphQL endpoint
   app.use(
