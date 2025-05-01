@@ -13,6 +13,7 @@ export const verifyToken = (token: string, secret: string): TokenPayload => {
 }
 
 export const authenticateGraphQLRoute = (req: Request): void => {
+  console.log("req.session: ", req.session);
   console.log("req.session?.access: ", req.session?.access);
 
   if (!req.session?.access) {
