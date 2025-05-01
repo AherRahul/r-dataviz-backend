@@ -85,6 +85,8 @@ export class AuthService {
       access: accessToken
     }
 
+    console.log("req.session: ", req.session);
+
     return {
       projectIds: result,
       collections,
